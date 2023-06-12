@@ -284,3 +284,59 @@ member_no REFERENCES member(member_no) ON DELETE CASCADE NOT NULL,
 unique(message_no, member_no)
 );
 
+-- 채팅방
+create table dm_room (
+room_no number primary key,
+room_name varchar2(150) default null,
+room_created date default sysdate not null,
+room_type number(1) default 1 not null
+);
+create sequence dm_room_seq;
+
+-- 채팅 유저
+create table dm_user (
+member_no REFERENCES member(member_no) on delete cascade not null,
+room_no REFERENCES dm_room(room_no) on delete set null,
+join_time date default sysdate not null,
+read_time number,
+unread_message number,
+read_dm_time date default sysdate not null,
+primary key (member_no, room_no)
+);
+
+-- 채팅 메세지
+create table dm_message (
+message_no number primary key,
+room_no REFERENCES dm_room(room_no) on delete cascade not null,
+message_sender REFERENCES member(member_no) on delete cascade not null,
+message_content VARCHAR2(4000) not null,
+message_send_time date default sysdate not null,
+message_type number default 0 not null,
+attachment_no number
+);
+create sequence dm_message_seq;
+
+-- 개인 채팅방
+create table dm_privacy_room (
+  inviter_no number REFERENCES member(member_no) on delete cascade not null,
+  invitee_no number REFERENCES member(member_no) on delete cascade not null,
+  room_no number REFERENCES dm_room(room_no) on delete set null,
+  primary key (inviter_no, invitee_no, room_no)
+);
+
+-- 채팅방 이름 변경
+create table dm_room_rename (
+rename_no number primary key,
+room_no number REFERENCES dm_room(room_no) on delete cascade not null,
+member_no number REFERENCES member(member_no) on delete cascade not null,
+room_rename varchar2(150)
+);
+create sequence dm_room_rename_seq;
+
+-- 메세지 삭제
+create table dm_message_deleted (
+    member_no REFERENCES member(member_no) on delete cascade not null,
+    message_no REFERENCES dm_message(message_no),
+    primary key (member_no, message_no)
+);
+
